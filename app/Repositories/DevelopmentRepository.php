@@ -2,20 +2,20 @@
 
 namespace App\Repositories;
 
-use App\Interfaces\EventParticipantRepositoryInterface;
+use App\Interfaces\DevelopmentRepositoryInterface;
 use App\Models\Event;
-use App\Models\EventParticipant;
+use App\Models\Development;
 use Exception;
 use Illuminate\Support\Facades\DB;
 
-class EventParticipantRepository implements EventParticipantRepositoryInterface
+class DevelopmentRepository implements DevelopmentRepositoryInterface
 {
     public function getAll(
         ?string $search,
         ?int $limit,
         bool $execute
     ) {
-        $query = EventParticipant::where(function ($query) use ($search) {
+        $query = Development::where(function ($query) use ($search) {
             if ($search) {
                 // jika ada parameter search maka akan melakukan search yang didefinisikan di model user
                 $query->search($search);
@@ -50,7 +50,7 @@ class EventParticipantRepository implements EventParticipantRepositoryInterface
     public function getById(
         string $id
     ) {
-        $query = EventParticipant::where('id', $id);
+        $query = Development::where('id', $id);
         return $query->first();
     }
 
@@ -61,20 +61,20 @@ class EventParticipantRepository implements EventParticipantRepositoryInterface
         DB::beginTransaction();
 
         try {
-            $event = Event::where('id', $data['event_id'])->first();
+            $event = Development::where('id', $data['event_id'])->first();
 
-            $eventParticipant  = new EventParticipant;
-            $eventParticipant->event_id = $data['event_id'];
-            $eventParticipant->head_of_family_id = $data['head_of_family_id'];
-            $eventParticipant->quantity = $data['quantity'];
-            $eventParticipant->total_price = $event->price * $data['quantity'];
-            $eventParticipant->payment_status = "pending";
+            $development  = new Development;
+            $development->event_id = $data['event_id'];
+            $development->head_of_family_id = $data['head_of_family_id'];
+            $development->quantity = $data['quantity'];
+            $development->total_price = $event->price * $data['quantity'];
+            $development->payment_status = "pending";
 
-            $eventParticipant->save();
+            $development->save();
 
             DB::commit();
 
-            return $eventParticipant;
+            return $development;
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -92,27 +92,27 @@ class EventParticipantRepository implements EventParticipantRepositoryInterface
         try {
             $event = Event::where('id', $data['event_id'])->first();
 
-            $eventParticipant = EventParticipant::find($id);
-            $eventParticipant->event_id = $data['event_id'];
-            $eventParticipant->head_of_family_id = $data['head_of_family_id'];
+            $development = Development::find($id);
+            $development->event_id = $data['event_id'];
+            $development->head_of_family_id = $data['head_of_family_id'];
 
             if (isset($data['quantity'])) {
-                $eventParticipant->quantity = $data['quantity'];
+                $development->quantity = $data['quantity'];
             } else {
-                $data['quantity'] = $eventParticipant->quantity;
+                $data['quantity'] = $development->quantity;
             }
-            $eventParticipant->total_price = $event->price * $data['quantity'];
+            $development->total_price = $event->price * $data['quantity'];
             if (isset($data['payment_status'])) {
-                $eventParticipant->payment_status = $data['payment_status'];
+                $development->payment_status = $data['payment_status'];
             } else {
-                $data['payment_status'] = $eventParticipant->payment_status;
+                $data['payment_status'] = $development->payment_status;
             }
 
-            $eventParticipant->save();
+            $development->save();
 
             DB::commit();
 
-            return $eventParticipant;
+            return $development;
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -126,13 +126,13 @@ class EventParticipantRepository implements EventParticipantRepositoryInterface
         DB::beginTransaction();
 
         try {
-            $eventParticipant = EventParticipant::find($id);
+            $development = Development::find($id);
 
-            $eventParticipant->delete();
+            $development->delete();
 
             DB::commit();
 
-            return $eventParticipant;
+            return $development;
         } catch (\Exception $e) {
             DB::rollBack();
 

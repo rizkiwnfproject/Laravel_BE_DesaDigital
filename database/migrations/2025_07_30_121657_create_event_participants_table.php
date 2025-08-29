@@ -23,7 +23,7 @@ return new class extends Migration
             $table->integer('quantity');
             $table->decimal('total_price', 10, 2);
             $table->string('payment_status');
-            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
+            // $table->enum('status', ['pending', 'paid', 'canceled'])->default('pending');
 
             $table->softDeletes();
             $table->timestamps();
