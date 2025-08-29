@@ -2,13 +2,14 @@
 
 namespace App\Repositories;
 
-use App\Interfaces\EventParticipantRepositoryInterface;
+use App\Interfaces\DevelopmentApplicantRepositoryInterface;
+use App\Models\DevelopmentApplicant;
 use App\Models\Event;
 use App\Models\EventParticipant;
 use Exception;
 use Illuminate\Support\Facades\DB;
 
-class EventParticipantRepository implements EventParticipantRepositoryInterface
+class DevelopmentApplicantRepository implements DevelopmentApplicantRepositoryInterface
 {
     public function getAll(
         ?string $search,
@@ -17,14 +18,12 @@ class EventParticipantRepository implements EventParticipantRepositoryInterface
     ) {
         $query = EventParticipant::where(function ($query) use ($search) {
             if ($search) {
-                // jika ada parameter search maka akan melakukan search yang didefinisikan di model user
                 $query->search($search);
             }
         });
 
         $query->orderBy('created_at', 'desc');
         if ($limit) {
-            // take -> mengambil data berdasarkan limit
             $query->take($limit);
         }
 
@@ -50,7 +49,7 @@ class EventParticipantRepository implements EventParticipantRepositoryInterface
     public function getById(
         string $id
     ) {
-        $query = EventParticipant::where('id', $id);
+        $query = DevelopmentApplicant::where('id', $id);
         return $query->first();
     }
 
