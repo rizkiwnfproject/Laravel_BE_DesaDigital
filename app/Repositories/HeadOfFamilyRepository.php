@@ -64,7 +64,7 @@ class HeadOfFamilyRepository implements HeadOfFamilyRepositoryInterface
                 'name' => $data['name'],
                 'email' => $data['email'],
                 'password' => $data['password'],
-            ]);
+            ])->assignRole('head-of-family');
 
             $headOfFamily = new HeadOfFamily;
             $headOfFamily->user_id = $user->id;

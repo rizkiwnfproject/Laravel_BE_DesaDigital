@@ -2,79 +2,49 @@
 
 namespace App\Repositories;
 
-use App\Interfaces\EventParticipantRepositoryInterface;
+use App\Interfaces\ProfileRepositoryInterface;
 use App\Models\Event;
 use App\Models\EventParticipant;
+use App\Models\Profile;
 use Exception;
 use Illuminate\Support\Facades\DB;
 
-class EventParticipantRepository implements EventParticipantRepositoryInterface
+class ProfileRepository implements ProfileRepositoryInterface
 {
-    public function getAll(
-        ?string $search,
-        ?int $limit,
-        bool $execute
-    ) {
-        $query = EventParticipant::where(function ($query) use ($search) {
-            if ($search) {
-                // jika ada parameter search maka akan melakukan search yang didefinisikan di model user
-                $query->search($search);
-            }
-        });
-
-        $query->orderBy('created_at', 'desc');
-        if ($limit) {
-            // take -> mengambil data berdasarkan limit
-            $query->take($limit);
-        }
-
-        if ($execute) {
-            return $query->get();
-        }
-
-        return $query;
-    }
-
-    public function getAllPaginated(
-        ?string $search,
-        ?int $rowPerPage
-    ) {
-        $query = $this->getAll(
-            $search,
-            $rowPerPage,
-            false,
-        );
-        return $query->paginate($rowPerPage);
-    }
-
-    public function getById(
-        string $id
-    ) {
-        $query = EventParticipant::where('id', $id);
-        return $query->first();
+    
+    public function get()
+    {
+        return Profile::first();
     }
 
     public function create(
         array $data
     ) {
-        // jika ada kesalahan data maka data tidak otomatis keinput
         DB::beginTransaction();
 
         try {
-            $event = Event::where('id', $data['event_id'])->first();
+            $profile  = new Profile;
+            $profile->thumbnail = $data['thumbnail']->store('assets/profiles', 'public');
+            $profile->name = $data['name'];
+            $profile->about = $data['about'];
+            $profile->headman = $data['headman'];
+            $profile->people = $data['people'];
+            $profile->agricultural_area = $data['agricultural_area'];
+            $profile->total_area = $data['total_area'];
 
-            $eventParticipant  = new EventParticipant;
-            $eventParticipant->event_id = $data['event_id'];
-            $eventParticipant->head_of_family_id = $data['head_of_family_id'];
-            $eventParticipant->quantity = $data['quantity'];
-            $eventParticipant->total_price = $event->price * $data['quantity'];
-            $eventParticipant->payment_status = "pending";
+            if (array_key_exists('images', $data)) {
+                foreach ($data['images'] as $image) {
+                    $profile->profileImage()->create([
+                        'image' => $image->store('assets/profiles', 'public')
+                    ]);
+                }
+            }
 
-            $eventParticipant->save();
+            $profile->save();
 
             DB::commit();
 
-            return $eventParticipant;
+            return $profile;
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -83,56 +53,36 @@ class EventParticipantRepository implements EventParticipantRepositoryInterface
     }
 
     public function update(
-        string $id,
         array $data
     ) {
         // jika ada kesalahan data maka data tidak otomatis keinput
         DB::beginTransaction();
 
         try {
-            $event = Event::where('id', $data['event_id'])->first();
-
-            $eventParticipant = EventParticipant::find($id);
-            $eventParticipant->event_id = $data['event_id'];
-            $eventParticipant->head_of_family_id = $data['head_of_family_id'];
-
-            if (isset($data['quantity'])) {
-                $eventParticipant->quantity = $data['quantity'];
-            } else {
-                $data['quantity'] = $eventParticipant->quantity;
+            $profile  = Profile::first();
+            if (isset($data['thumbnail'])) {
+                $profile->thumbnail = $data['thumbnail']->store('assets/profiles', 'public');
             }
-            $eventParticipant->total_price = $event->price * $data['quantity'];
-            if (isset($data['payment_status'])) {
-                $eventParticipant->payment_status = $data['payment_status'];
-            } else {
-                $data['payment_status'] = $eventParticipant->payment_status;
+            $profile->name = $data['name'];
+            $profile->about = $data['about'];
+            $profile->headman = $data['headman'];
+            $profile->people = $data['people'];
+            $profile->agricultural_area = $data['agricultural_area'];
+            $profile->total_area = $data['total_area'];
+
+            if (array_key_exists('images', $data)) {
+                foreach ($data['images'] as $image) {
+                    $profile->profileImage()->create([
+                        'image' => $image->store('assets/profiles', 'public')
+                    ]);
+                }
             }
 
-            $eventParticipant->save();
+            $profile->save();
 
             DB::commit();
 
-            return $eventParticipant;
-        } catch (\Exception $e) {
-            DB::rollBack();
-
-            throw new Exception($e->getMessage());
-        }
-    }
-
-    public function delete(
-        string $id
-    ) {
-        DB::beginTransaction();
-
-        try {
-            $eventParticipant = EventParticipant::find($id);
-
-            $eventParticipant->delete();
-
-            DB::commit();
-
-            return $eventParticipant;
+            return $profile;
         } catch (\Exception $e) {
             DB::rollBack();
 

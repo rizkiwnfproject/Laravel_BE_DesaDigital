@@ -4,8 +4,6 @@ namespace App\Repositories;
 
 use App\Interfaces\DevelopmentApplicantRepositoryInterface;
 use App\Models\DevelopmentApplicant;
-use App\Models\Event;
-use App\Models\EventParticipant;
 use Exception;
 use Illuminate\Support\Facades\DB;
 
@@ -16,7 +14,7 @@ class DevelopmentApplicantRepository implements DevelopmentApplicantRepositoryIn
         ?int $limit,
         bool $execute
     ) {
-        $query = EventParticipant::where(function ($query) use ($search) {
+        $query = DevelopmentApplicant::where(function ($query) use ($search) {
             if ($search) {
                 $query->search($search);
             }
@@ -56,24 +54,21 @@ class DevelopmentApplicantRepository implements DevelopmentApplicantRepositoryIn
     public function create(
         array $data
     ) {
-        // jika ada kesalahan data maka data tidak otomatis keinput
         DB::beginTransaction();
 
         try {
-            $event = Event::where('id', $data['event_id'])->first();
+            $developmentApplicant  = new DevelopmentApplicant;
+            $developmentApplicant->development_id = $data['development_id'];
+            $developmentApplicant->user_id = $data['user_id'];
+            if (isset($data['status'])) {
+                $developmentApplicant->status = $data['status'];
+            }
 
-            $eventParticipant  = new EventParticipant;
-            $eventParticipant->event_id = $data['event_id'];
-            $eventParticipant->head_of_family_id = $data['head_of_family_id'];
-            $eventParticipant->quantity = $data['quantity'];
-            $eventParticipant->total_price = $event->price * $data['quantity'];
-            $eventParticipant->payment_status = "pending";
-
-            $eventParticipant->save();
+            $developmentApplicant->save();
 
             DB::commit();
 
-            return $eventParticipant;
+            return $developmentApplicant;
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -85,33 +80,21 @@ class DevelopmentApplicantRepository implements DevelopmentApplicantRepositoryIn
         string $id,
         array $data
     ) {
-        // jika ada kesalahan data maka data tidak otomatis keinput
         DB::beginTransaction();
 
         try {
-            $event = Event::where('id', $data['event_id'])->first();
-
-            $eventParticipant = EventParticipant::find($id);
-            $eventParticipant->event_id = $data['event_id'];
-            $eventParticipant->head_of_family_id = $data['head_of_family_id'];
-
-            if (isset($data['quantity'])) {
-                $eventParticipant->quantity = $data['quantity'];
-            } else {
-                $data['quantity'] = $eventParticipant->quantity;
-            }
-            $eventParticipant->total_price = $event->price * $data['quantity'];
-            if (isset($data['payment_status'])) {
-                $eventParticipant->payment_status = $data['payment_status'];
-            } else {
-                $data['payment_status'] = $eventParticipant->payment_status;
+            $developmentApplicant = DevelopmentApplicant::find($id);
+            $developmentApplicant->development_id = $data['development_id'];
+            $developmentApplicant->user_id = $data['user_id'];
+            if (isset($data['status'])) {
+                $developmentApplicant->status = $data['status'];
             }
 
-            $eventParticipant->save();
+            $developmentApplicant->save();
 
             DB::commit();
 
-            return $eventParticipant;
+            return $developmentApplicant;
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -125,13 +108,13 @@ class DevelopmentApplicantRepository implements DevelopmentApplicantRepositoryIn
         DB::beginTransaction();
 
         try {
-            $eventParticipant = EventParticipant::find($id);
+            $developmentApplicant = DevelopmentApplicant::find($id);
 
-            $eventParticipant->delete();
+            $developmentApplicant->delete();
 
             DB::commit();
 
-            return $eventParticipant;
+            return $developmentApplicant;
         } catch (\Exception $e) {
             DB::rollBack();
 

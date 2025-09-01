@@ -17,14 +17,12 @@ class EventParticipantRepository implements EventParticipantRepositoryInterface
     ) {
         $query = EventParticipant::where(function ($query) use ($search) {
             if ($search) {
-                // jika ada parameter search maka akan melakukan search yang didefinisikan di model user
                 $query->search($search);
             }
         });
 
         $query->orderBy('created_at', 'desc');
         if ($limit) {
-            // take -> mengambil data berdasarkan limit
             $query->take($limit);
         }
 
